@@ -1,262 +1,46 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Player de Música</title>
-  <style>
-    li {
-      cursor: move;
-      user-select: none;
-    }
-
-    .progresso {
-      width: 100%;
-      height: 10px;
-      background-color: #ccc;
-    }
-
-    .progresso-fill {
-      height: 100%;
-      background-color: #4caf50;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
+
 <body>
-  <h1>Player de Música</h1>
+  <main>
+    <h1>Player de Música</h1>
 
-  <form>
-    <label for="fileUpload">Selecione as músicas a serem adicionadas:</label>
-    <input type="file" id="fileUpload" multiple>
-  </form>
+    <form>
+      <label for="fileUpload">Selecione as músicas a serem adicionadas:</label>
+      <input type="file" id="fileUpload" multiple>
+    </form>
 
-  <ul id="listaMusicas"></ul>
+    <ul id="listaMusicas"></ul>
 
-  <audio id="audioPlayer"></audio>
+    <audio id="audioPlayer"></audio>
 
-  <div>
-    <button id="playPause">Play</button>
-    <button id="prev">Anterior</button>
-    <button id="next">Próxima</button>
-    <button id="random">Aleatório</button>
-    <button id="repeat">Repetir</button>
-    <br>
-    <div class="progresso" id="progresso">
-      <div class="progresso-fill"></div>
+    <div class="player">
+      <div class="controles">
+        <button id="next"><i class="bi bi-rewind"></i></button>
+        <button id="playPause"><i class="bi bi-play-fill"></i></button>
+        <button id="prev"><i class="bi bi-fast-forward"></i></i></button>
+        <button id="random"><i class="bi bi-shuffle"></i></button>
+        <button id="repeat"><i class="bi bi-repeat"></i></button>
+        <br>
+      </div>
+      <div class="progresso-tempo">
+        <span id="tempoAtual">00:00</span>
+        <div class="progresso" id="progresso">
+          <div class="progresso-fill"></div>
+        </div>
+        <span id="tempoTotal">00:00</span>
+      </div>
+      <div class="faixa-atual" id="faixaAtual">Tocando:</div>
     </div>
-    <br>
-    <span id="tempoAtual">00:00</span> / <span id="tempoTotal">00:00</span>
-  </div>
 
-  <script>
-    var musicas = [];
-    var draggingIndex = null;
-
-    var audioPlayer = document.getElementById('audioPlayer');
-    var progressoDiv = document.getElementById('progresso');
-    var progressoFillDiv = document.querySelector('.progresso-fill');
-    var tempoAtualSpan = document.getElementById('tempoAtual');
-    var tempoTotalSpan = document.getElementById('tempoTotal');
-
-    var playPauseButton = document.getElementById('playPause');
-    playPauseButton.addEventListener('click', function() {
-      if (audioPlayer.paused) {
-        audioPlayer.play();
-        playPauseButton.textContent = 'Pause';
-      } else {
-        audioPlayer.pause();
-        playPauseButton.textContent = 'Play';
-      }
-    });
-
-    var prevButton = document.getElementById('prev');
-    prevButton.addEventListener('click', function() {
-      var currentIndex = musicas.findIndex(function(musica) {
-        return musica.isPlaying;
-      });
-
-      if (currentIndex > 0) {
-        tocarMusica(musicas[currentIndex - 1]);
-      }
-    });
-
-    var nextButton = document.getElementById('next');
-    nextButton.addEventListener('click', function() {
-      var currentIndex = musicas.findIndex(function(musica) {
-        return musica.isPlaying;
-      });
-
-      if (currentIndex < musicas.length - 1) {
-        tocarMusica(musicas[currentIndex + 1]);
-      }
-    });
-
-    var randomButton = document.getElementById('random');
-    randomButton.addEventListener('click', function() {
-      var currentIndex = musicas.findIndex(function(musica) {
-        return musica.isPlaying;
-      });
-
-      var randomIndex = getRandomIndex(currentIndex);
-      tocarMusica(musicas[randomIndex]);
-    });
-
-    var repeatButton = document.getElementById('repeat');
-    repeatButton.addEventListener('click', function() {
-      audioPlayer.loop = !audioPlayer.loop;
-      if (audioPlayer.loop) {
-        repeatButton.classList.add('active');
-      } else {
-        repeatButton.classList.remove('active');
-      }
-    });
-
-    progressoDiv.addEventListener('click', function(event) {
-      var percent = event.offsetX / progressoDiv.clientWidth;
-      var currentTime = percent * audioPlayer.duration;
-      audioPlayer.currentTime = currentTime;
-    });
-
-    function adicionarMusica(musica) {
-      musicas.push(musica);
-      exibirListaMusicas();
-    }
-
-    function exibirListaMusicas() {
-      var listaMusicas = document.getElementById('listaMusicas');
-      listaMusicas.innerHTML = '';
-
-      musicas.forEach(function(musica, index) {
-        var li = document.createElement('li');
-        li.textContent = musica.nome;
-
-        var renomearButton = document.createElement('button');
-        renomearButton.textContent = 'Renomear';
-        renomearButton.addEventListener('click', function() {
-          var novoNome = prompt('Digite o novo nome da faixa:', musica.nome);
-          if (novoNome) {
-            musica.nome = novoNome;
-            exibirListaMusicas();
-          }
-        });
-        li.appendChild(renomearButton);
-
-        var playButton = document.createElement('button');
-        playButton.textContent = 'Play';
-        playButton.addEventListener('click', function() {
-          tocarMusica(musica);
-        });
-        li.appendChild(playButton);
-
-        var moveUpButton = document.createElement('button');
-        moveUpButton.textContent = '↑';
-        moveUpButton.addEventListener('click', function() {
-          moverFaixa(index, index - 1);
-        });
-        li.appendChild(moveUpButton);
-
-        var moveDownButton = document.createElement('button');
-        moveDownButton.textContent = '↓';
-        moveDownButton.addEventListener('click', function() {
-          moverFaixa(index, index + 1);
-        });
-        li.appendChild(moveDownButton);
-
-        li.draggable = true;
-        li.addEventListener('dragstart', function(event) {
-          draggingIndex = index;
-          event.dataTransfer.effectAllowed = 'move';
-          event.dataTransfer.setData('text/html', this.innerHTML);
-        });
-        li.addEventListener('dragover', function(event) {
-          event.preventDefault();
-          event.dataTransfer.dropEffect = 'move';
-        });
-        li.addEventListener('dragenter', function(event) {
-          event.preventDefault();
-          this.classList.add('dragover');
-        });
-        li.addEventListener('dragleave', function() {
-          this.classList.remove('dragover');
-        });
-        li.addEventListener('drop', function(event) {
-          var dropIndex = index;
-          if (draggingIndex < dropIndex) {
-            dropIndex--;
-          }
-          if (draggingIndex !== dropIndex) {
-            moverFaixa(draggingIndex, dropIndex);
-          }
-          this.classList.remove('dragover');
-        });
-        li.addEventListener('dragend', function() {
-          draggingIndex = null;
-        });
-
-        listaMusicas.appendChild(li);
-      });
-    }
-
-    function tocarMusica(musica) {
-      musicas.forEach(function(musica) {
-        musica.isPlaying = false;
-      });
-
-      musica.isPlaying = true;
-      audioPlayer.src = URL.createObjectURL(musica.file);
-      audioPlayer.play();
-      playPauseButton.textContent = 'Pause';
-      exibirListaMusicas();
-    }
-
-    function formatarTempo(segundos) {
-      var minutos = Math.floor(segundos / 60);
-      var segundosFormatados = Math.floor(segundos % 60).toString().padStart(2, '0');
-      return minutos + ':' + segundosFormatados;
-    }
-
-    function moverFaixa(origemIndex, destinoIndex) {
-      if (destinoIndex < 0 || destinoIndex >= musicas.length) {
-        return;
-      }
-
-      var faixaMovida = musicas.splice(origemIndex, 1)[0];
-      musicas.splice(destinoIndex, 0, faixaMovida);
-      exibirListaMusicas();
-    }
-
-    function getRandomIndex(currentIndex) {
-      var randomIndex;
-      do {
-        randomIndex = Math.floor(Math.random() * musicas.length);
-      } while (randomIndex === currentIndex);
-      return randomIndex;
-    }
-
-    fileUpload.addEventListener('change', function(event) {
-      var files = event.target.files;
-      for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        var musica = {
-          nome: file.name,
-          file: file,
-          isPlaying: false
-        };
-        adicionarMusica(musica);
-      }
-    });
-
-    audioPlayer.addEventListener('loadedmetadata', function() {
-      tempoTotalSpan.textContent = formatarTempo(audioPlayer.duration);
-    });
-
-    audioPlayer.addEventListener('timeupdate', function() {
-      var currentTime = audioPlayer.currentTime;
-      var duration = audioPlayer.duration;
-      var progressPercent = (currentTime / duration) * 100;
-
-      progressoFillDiv.style.width = progressPercent + '%';
-      tempoAtualSpan.textContent = formatarTempo(currentTime);
-    });
-
-  </script>
+  </main>
+  <script src="script.js"></script>
 </body>
+
 </html>

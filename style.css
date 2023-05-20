@@ -1,0 +1,80 @@
+body {
+
+  color: var(--cor-texto);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+main {
+  width: 50vw;
+
+
+}
+
+/* Restante do seu CSS... */
+ul {
+  display: block;
+  overflow: scroll;
+  max-height: 500px;
+
+}
+
+li {
+  cursor: move;
+  user-select: none;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progresso-tempo {
+  display: block ruby;
+}
+
+.progresso {
+  width: 100%;
+  height: 10px;
+  background-color: #ccc;
+  display: inline-block;
+}
+
+.progresso-fill {
+  height: 100%;
+  background-color: #4caf50;
+}
+
+.faixa-atual {
+  font-weight: bold;
+
+}
+
+.controles {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 2rem 0;
+  gap: 20px;
+}
+
+button {
+  width: 50px;
+  height: 50px;
+  background-color: #4caf50;
+  padding: 2rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 50px;
+
+}
+
+#ctr-list {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
